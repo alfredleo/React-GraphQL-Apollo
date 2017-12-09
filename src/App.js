@@ -4,6 +4,8 @@ import { ApolloClient } from 'apollo-client';
 import { createHttpLink } from 'apollo-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloProvider } from 'react-apollo';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 import { render } from 'react-dom';
 import logo from './logo.svg';
 import './App.css';
@@ -13,13 +15,30 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
+const channelsListQuery = gql`
+   query ChannelsListQuery {
+     channels {
+       id
+       name
+     }
+   }
+ `;
 
-const ChannelsList = () => (
-  <ul className="Item-list">
-    <li>Channel 1</li>
-    <li>Channel 2</li>
-  </ul>
-);
+ const ChannelsList = ({ data: {loading, error, channels }}) => {
+    if (loading) {
+      return <p>Loading ...</p>;
+    }
+    if (error) {
+      return <p>{error.message}</p>;
+    }
+    return <ul>
+      { channels.map( ch => <li key={ch.id}>{ch.name}</li> ) }
+    </ul>;
+  };
+
+const ChannelsListWithData = graphql(channelsListQuery)(ChannelsList);
+
+
 
 class App extends Component {
   render() {
